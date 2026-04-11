@@ -1,75 +1,59 @@
-import io
-import cv2
-import RPi.GPIO as GPIO
-import pigpio
+import subprocess
 
-from flask import Flask, Response, request
-from picamera2 import Picamera2
+class Camera:
+    def __init__(self):
+        self.process = None
+        self.width = 320
+        self.height = 240
 
-app = Flask(__name__)
+    def start(self):
+        self.stop()
 
-# Define LED GPIO pins
-LED_PINS = [22, 27, 17]  # adjust to your wiring
+        cmd = [
+            "rpicam-vid",
+            "-t", "0",
+            "-w", str(self.width),
+            "-h", str(self.height),
+            "-fps", "30",
+            "-o", "-"
+        ]
 
-pi = pigpio.pi()
+        self.process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            bufsize=0
+        )
 
-for pin in LED_PINS:
-    pi.set_mode(pin, pigpio.OUTPUT)
+    def stop(self):
+        if self.process:
+            self.process.kill()
+            self.process = None
 
-# Camera setup
-picam2 = Picamera2()
-picam2.configure(picam2.create_video_configuration(main={"size": (320, 240)}))
+    def set_resolution(self, width, height):
+        self.width = width
+        self.height = height
+        self.start()
 
-picam2.start()
+    def frames(self):
+        buffer = b""
 
-def gen_frames():
-    """Generator that yields MJPEG frames from Picamera2."""
-    while True:
-        frame = picam2.capture_array("main")
-        ret, jpeg = cv2.imencode('.jpg', frame)
-        if not ret:
-            continue
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+        while True:
+            if not self.process:
+                self.start()
 
-@app.route('/video')
-def video_feed():
-    return Response(gen_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+            chunk = self.process.stdout.read(4096)
+            if not chunk:
+                continue
 
-@app.route('/led/<int:led_id>', methods=['POST'])
-def control_led(led_id):
-    if led_id < 0 or led_id >= len(LED_PINS):
-        return "Invalid LED ID", 400
-    try:
-        duty = int(request.form.get("duty", 0))  # 0–255
-        pi.set_PWM_dutycycle(LED_PINS[led_id], duty)
-        print(f"LED {led_id} set to {duty}")
-        return f"LED {led_id} set to {duty}", 200
-    except Exception as e:
-        return str(e), 500
+            buffer += chunk
 
-@app.route('/set_resolution', methods=['POST'])
-def set_resolution():
-    width = int(request.form.get("width", 320))
-    height = int(request.form.get("height", 240))
-    try:
-        picam2.stop()
-        picam2.configure(picam2.create_video_configuration(
-            main={"size": (width, height), "format": "XRGB8888"}))
-        picam2.start()
-        return f"Resolution changed to {width}x{height}", 200
-    except Exception as e:
-        return str(e), 500
+            start = buffer.find(b'\xff\xd8')
+            end = buffer.find(b'\xff\xd9')
 
+            if start != -1 and end != -1:
+                jpg = buffer[start:end+2]
+                buffer = buffer[end+2:]
 
- # width="640" height="480"
-@app.route('/')
-def index():
-    with open("index.html", "r") as file:
-        content = file.read()
-    return content
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=800, threaded=True)
-
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' +
+                       jpg + b'\r\n')
