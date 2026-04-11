@@ -2,4 +2,4 @@ Basic program to stream rasberry camera Raspberry Pi Model A  for on web & contr
 
 For old version need to be launch with RPI_LGPIO_REVISION=800012
 
-Second version try to capture video not using python a bit better performance but got some issue with pwm on led
+Third version try to capture video using another method no significant improvement
