@@ -4,32 +4,47 @@
     --accent: #38bdf8;
     --accent2: #22c55e;
     --danger: #ef4444;
-    --text: #e2e8f0;
+    --text: #ffffff;
 }
 
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top, DodgerBlue, #003fff);
+    background: radial-gradient(circle, #5fb7ff ,#1E90FF,  #003fff);
     color: var(--text);
+    font-size: 20px;
 }
 
-#websocketStatus, #cameraStatus {
+#status {
     color: initial;
 }
 
 h1 {
+    font-size: 30px;
     text-align: center;
-    font-weight: 600;
+    font-weight: bold;
     margin: 20px 0;
     letter-spacing: 1px;
+    display: flex;
+    align-items: center;   /* vertical alignment */
+    justify-content: center; /* optional: center everything */
+    gap: 10px; /* space between elements */
 }
 
 h2 {
+    font-size: 25px;
     text-align: center;
-    font-weight: 500;
+    font-weight: bold;
     margin: 20px 0;
     letter-spacing: 1px;
+    display: flex;
+    align-items: center;   /* vertical alignment */
+    justify-content: center; /* optional: center everything */
+    gap: 10px; /* space between elements */
+}
+
+.icon{
+    font-size: 75px;
 }
 
 #video {
@@ -53,31 +68,31 @@ h2 {
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-h3 {
-    margin-top: 10px;
-    color: var(--accent);
-}
-
 label {
     display: block;
     margin: 15px 0;
-    font-size: 14px;
+    font-size: 20px;
 }
 
 input[type=range] {
     width: 60%;
     appearance: none;
-    height: 6px;
+    height: 15px;
     border-radius: 5px;
     background: #334155;
     outline: none;
     margin-left: 10px;
+    flex: 1;                /* take remaining space */
+    min-width: 150px;
+
 }
+
+
 
 input[type=range]::-webkit-slider-thumb {
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 160px;
+    height: 160px;
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
@@ -85,7 +100,7 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 input[type=number] {
-    width: 60px;
+    width: 70px;
     margin-left: 10px;
     padding: 5px;
     border-radius: 6px;
@@ -100,17 +115,21 @@ select {
     background: #020617;
     color: white;
     border: 1px solid #334155;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 button {
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: 32px;
     border-radius: 8px;
     border: none;
     cursor: pointer;
     margin-left: 6px;
     transition: 0.2s;
+    flex-shrink: 0;         /* prevent shrinking */
 }
+
 
 button:hover {
     transform: translateY(-1px);
@@ -118,27 +137,52 @@ button:hover {
 }
 
 .led{
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
+    width: 150px;           /* fixed width for alignment */
+    text-align: right;      /* optional: nicer alignment */
 }
 
 .btn-set {
     background: var(--accent);
     color: black;
+    font-weight: bold;
+}
+
+.btn {
+    border: none;
+    cursor: pointer;
+    width: 100px;
+    color: var(--white);;
 }
 
 .btn-on {
     background: var(--accent2);
-    color: black;
+    font-weight: bold;
 }
 
 .btn-off {
     background: var(--danger);
-    color: white;
+    font-weight: bold;
 }
 
 .row {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    margin-bottom: 10px;
+    gap: 10px;              /* consistent spacing */
+
 }
+
+
+
+
+
+
+
+
+
+
+
+

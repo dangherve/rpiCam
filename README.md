@@ -1,5 +1,4 @@
-Basic program to stream rasberry camera Raspberry Pi Model A  for on web & control some led first version in python using flask made with the help of chatGpt
+Basic program to stream rasberry camera Raspberry Pi Model A
 
-For old version need to be launch with RPI_LGPIO_REVISION=800012
-
-Third version try to capture video using another method no significant improvement
+Final version remove completely python:
+use nginx as web server and some php script to execute direcly some program for streaming and control led

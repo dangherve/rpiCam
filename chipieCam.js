@@ -1,92 +1,130 @@
+
+
 function changeResolution(value) {
     let parts = value.split("x");
-    fetch('/set_resolution', {
+    fetch( 'chipieCam.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'width=' + parts[0] + '&height=' + parts[1]
     });
 }
 
-function updateLED(id, duty) {
+async function updateLED(id, duty) {
     document.getElementById("led" + id + "num").value = duty;
-    fetch('/led/' + id, {
+    let object = await fetch( 'chipieCam.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'duty=' + duty
+      body: 'led=' + id + '&duty=' + duty
     });
+    let res = await object.text();
+    let obj = JSON.parse(res);
+    console.log(obj)
+
+    updateChipieCameraStatus()
+
 }
 
-function sendLED(id) {
+async function sendLED(id) {
     let duty = document.getElementById("led" + id + "num").value;
     document.getElementById("led" + id).value = duty;
-    fetch('/led/' + id, {
+    let object = await fetch( 'chipieCam.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'duty=' + duty
+      body: 'led=' + id + '&duty=' + duty
     });
+    let res =  await object.text();
+    let obj = JSON.parse(res);
+    console.log(obj)
+
+    updateChipieCameraStatus()
+
 }
 
-function offLED(id) {
-    fetch('/led/' + id, {
+async function offLED(id) {
+
+    let object = await fetch( 'chipieCam.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'duty=0'
+      body: 'led=' + id + '&duty=0'
     });
+    let res =  await object.text();
+    let obj = JSON.parse(res);
+    console.log(obj)
+
+    updateChipieCameraStatus()
 }
 
-function onLED(id) {
-    fetch('/led/' + id, {
+async function onLED(id) {
+
+    let object = await fetch( 'chipieCam.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'duty=255'
+      body: 'led=' + id + '&duty=255'
     });
+
+
+    let res =  await object.text();
+    let obj = JSON.parse(res);
+    console.log(obj)
+
+    updateChipieCameraStatus()
 }
 
-async function updateWebsocketStatus(){
-    let object = await fetch('/websocketStatus');
-    let res = await object.text();
-    document.getElementById("websocketStatus").innerHTML = res
+function updateLed(item,index){
+    led=index
+    duty=Number(item)
 
-    object = await fetch('/cameraStatus');
-    res = await object.text();
-    document.getElementById("cameraStatus").innerHTML = res
+    range = document.getElementById(`led${led}`)
+    btn   = document.getElementById(`led${led}btn`)
+    num   = document.getElementById(`led${led}num`)
+
+    range.value=duty
+    num.value=duty
+
+    if(duty != 0){
+        btn.textContent = "OFF";
+        btn.classList.remove("btn-on");
+        btn.classList.add("btn-off");
+        btn.setAttribute("onclick", `offLED(${led})`);
+
+    }else{
+        btn.textContent = "ON";
+        btn.classList.remove("btn-off");
+        btn.classList.add("btn-on");
+        btn.setAttribute("onclick", `onLED(${led})`);
+    }
+
+}
+
+async function updateChipieCameraStatus(){
+    let object = await fetch('chipieCam.php');
+    let res =  await object.text();
+    let obj = JSON.parse(res);
+
+    let status = "&#128308;"
+    let timeout = 1
+    switch(obj.cameraStatus){
+        case 0:
+            status="&#128308;"
+            tiemout=1
+            break
+        case 1:
+            status="&#128993;"
+            tiemout=1
+            break
+        case 2:
+            status="&#128994;"
+            tiemout=60
+            break
+    }
 
     now = new Date()
-    document.getElementById('status').innerText = now.toLocaleTimeString("fr-FR");
+    document.getElementById('status').innerHTML = status ;
+    document.getElementById('time').innerHTML =  now.toLocaleTimeString("fr-FR");
 
+    leds=obj.ledStatus
+
+    leds.forEach(updateLed)
+
+    setTimeout(updateChipieCameraStatus, timeout*1000)
 }
-
-async function startChipieCam(){
-    fetch('/start_websocket')
-
-    do{
-        object = await fetch('/websocketStatus');
-        res = await object.text();
-        console.log("resultat:"+res+" temoin:"+"&#128308;")
-        document.getElementById("websocketStatus").innerHTML = res
-    }while (res === "&#128308;")
-
-    fetch('/start_camera')
-
-    do{
-        object = await fetch('/cameraStatus');
-        res = await object.text();
-        document.getElementById("cameraStatus").innerHTML = res
-    }while (res === "&#128308;")
-    setInterval(updateWebsocketStatus, 60*1000);
-    startPlayer()
-}
-
-
-function startPlayer(){
-    if (mpegts.getFeatureList().mseLivePlayback) {
-        const player = mpegts.createPlayer({
-            type: 'mpegts',
-            url: 'ws://' + location.hostname + ':8082/'
-        });
-        player.attachMediaElement(document.getElementById('video'));
-        player.load();
-        player.play();
-    }
-}
-
