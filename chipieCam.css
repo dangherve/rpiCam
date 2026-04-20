@@ -47,8 +47,17 @@ h2 {
     font-size: 75px;
 }
 
+.video-container {
+  display: flex;
+  gap: 10px;            /* space between videos */
+}
+
+.video-block {
+  width: 50%;           /* each takes half */
+}
+
 #video {
-    width: 92vw;
+    width: 46vw;
     height: 55vh;
     object-fit: contain;
     display: block;
@@ -57,6 +66,18 @@ h2 {
     box-shadow: 0 10px 40px rgba(0,0,0,0.6);
     border: 1px solid rgba(255,255,255,0.1);
 }
+
+#video2 {
+    width: 46vw;
+    height: 55vh;
+    object-fit: contain;
+    display: block;
+    margin: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
 
 #controls {
     width: 90vw;
