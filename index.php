@@ -26,7 +26,10 @@
 $leds = [
     ["id" => 0, "name" => "Cool White"],
     ["id" => 1, "name" => "Warm White"],
-    ["id" => 2, "name" => "InfraRed"]
+    ["id" => 2, "name" => "Blue"],
+    ["id" => 3, "name" => "Red"],
+    ["id" => 4, "name" => "Green"]
+
 ];
 ?>
 
