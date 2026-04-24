@@ -1,11 +1,18 @@
 
 function cameraSelect(camera) {
 
+/*
+    if (camera == 0){
+        return 'http://192.168.64.16/'
+    }else{
+        return 'http://192.168.64.17/'
+    }
+*/
 
     if (camera == 0){
-        return 'https://chipeCam.dang.ovh/'
+        return 'https://chipieCam.dang.ovh/'
     }else{
-        return 'https://chipeCam2.dang.ovh/'
+        return 'https://chipieCam2.dang.ovh/'
     }
 
 }
