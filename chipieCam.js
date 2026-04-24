@@ -3,9 +3,9 @@ function cameraSelect(camera) {
 
 
     if (camera == 0){
-        return 'http://chipeCam.dang.ovh/'
+        return 'https://chipeCam.dang.ovh/'
     }else{
-        return 'http://chipeCam2.dang.ovh/'
+        return 'https://chipeCam2.dang.ovh/'
     }
 
 }
