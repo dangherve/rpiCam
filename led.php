@@ -1,6 +1,6 @@
 <?php
 
-$LED_PINS = [22, 27, 17];
+$LED_PINS = [22, 27, 17, 23, 24];
 
 
 $cmd="pigs p ".$LED_PINS[$_GET['led']]." ".$_GET['duty'];
