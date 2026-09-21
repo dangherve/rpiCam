@@ -1,19 +1,20 @@
 <?php
 
-    $cmd="";
+    $resolutionFile = "/tmp/resolution";
+    $ledFile        = "/tmp/led";
 
-
-    $resolutionFile="/tmp/resolution";
-    $ledFile="/tmp/led";
-
-    $pidFile="/tmp/pid";
-    $logFile="/tmp/chipieCam.log";
+    $serviceName = "camera.service";
 
     $LED_PINS = [22, 27, 17];
 
-    $RED=0;
-    $YELLOW=1;
-    $GREEN=2;
+    $RED    = 0;
+    $YELLOW = 1;
+    $GREEN  = 2;
+
+
+    /* ========================================================= */
+    /* HELPERS                                                   */
+    /* ========================================================= */
 
     /**
      * Load led status
@@ -36,8 +37,15 @@
      * Save led
      */
 
-    function setled($file, $ledStatus) {
-        file_put_contents($file, ((int)$ledStatus[0]).','.((int)$ledStatus[1]).','.((int)$ledStatus[2]));
+
+    function setLed($file, $ledStatus)
+    {
+        file_put_contents(
+            $file,
+            ((int)$ledStatus[0]) . ',' .
+            ((int)$ledStatus[1]) . ',' .
+            ((int)$ledStatus[2])
+        );
     }
 
     /**
@@ -48,6 +56,7 @@
         $content = @file_get_contents($file);
 
         if ($content === false || strpos($content, 'x') === false) {
+
             $w = 640;
             $h = 480;
             file_put_contents($file, "$w"."x"."$h");
@@ -61,88 +70,160 @@
     /**
      * Save resolution
      */
-
-    function setResolution($file, $w, $h) {
-        file_put_contents($file, ((int)$w).'x'.((int)$h));
+    function setResolution($file, $w, $h)
+    {
+        file_put_contents(
+            $file,
+            ((int)$w) . 'x' . ((int)$h)
+        );
     }
 
-    /**
-     * Check if process is running
+
+    /*
+     * Get systemd service state.
      */
+    function cameraRunning($serviceName)
+    {
+        $result = shell_exec(
+            "sudo systemctl is-active " .
+            escapeshellarg($serviceName) .
+            " 2>/dev/null"
+        );
 
-    function isRunning($pid) {
-        return $pid > 0 && file_exists("/proc/$pid");
-    }
-
-    $pid = (int) @file_get_contents($pidFile);
-
-    $ledStatus=getLed($ledFile);
-
-    /* ===================== */
-    /* RESOLUTION MANAGEMENT */
-    /* ===================== */
-
-    if (isset($_POST["width"], $_POST["height"])) {
-        $killCmd="sudo killall -15 rpicam-vid ffmpeg";
-        $width  = (int)$_POST["width"];
-        $height = (int)$_POST["height"];
-        setResolution($resolutionFile, $width, $height);
-        shell_exec($killCmd);
-        sleep(3);
-    } else {
-        list($width, $height) = getResolution($resolutionFile);
+        return trim($result) === "active";
     }
 
 
-    /* ===================== */
-    /* LED MANAGEMENT        */
-    /* ===================== */
-    $led=-1;
-    $duty=-1;
+    /*
+     * Restart camera.
+     */
+    function restartCamera($serviceName)
+    {
+        shell_exec(
+            "sudo systemctl restart " .
+            escapeshellarg($serviceName) .
+            " 2>&1"
+        );
+    }
+
+
+    /* ========================================================= */
+    /* LED MANAGEMENT                                            */
+    /* ========================================================= */
+
+    $ledStatus = getLed($ledFile);
+
+    $led  = -1;
+    $duty = -1;
+    $cmd  = "NOT CALL";
 
     if (isset($_POST["led"], $_POST["duty"])) {
 
-        $led=(int)$_POST["led"];
-        $duty=255-(int)$_POST["duty"];
+        $led  = (int)$_POST["led"];
+        $duty = (int)$_POST["duty"];
 
-        $cmd="pigs p ".$LED_PINS[$led]." ".$duty;
+        if (isset($LED_PINS[$led])) {
 
-        shell_exec($cmd);
+            /*
+             * Inverted PWM as in your original code.
+             */
+            $pwm = 255 - $duty;
 
-        $ledStatus[$led]=$_POST["duty"];
+            $cmd = sprintf(
+                "pigs p %d %d",
+                $LED_PINS[$led],
+                $pwm
+            );
 
-        setled($ledFile,$ledStatus);
+            shell_exec($cmd);
 
-    }else{
-        $cmd="NOT CALL";
+            $ledStatus[$led] = $duty;
+
+            setLed($ledFile, $ledStatus);
+        }
     }
 
-    /* ===================== */
-    /* CAMERA STATUS         */
-    /* ===================== */
 
-    if (!isRunning($pid)) {
-        $cmd = "sudo rpicam-vid -t 0 --inline --width $width --height $height --framerate 25 -o -| ffmpeg -i - -c:v copy -f flv rtmp://localhost/live/stream >$logFile 2>&1 & sleep 3; pgrep rpicam-vid";
-        $pid = (int) shell_exec($cmd);
-        file_put_contents($pidFile, $pid);
-        $cameraStatus = $RED;
-    } else {
+    /* ========================================================= */
+    /* RESOLUTION                                                  */
+    /* ========================================================= */
+
+    [$width, $height] = getResolution($resolutionFile);
+
+    if (isset($_POST["width"], $_POST["height"])) {
+
+        $newWidth  = (int)$_POST["width"];
+        $newHeight = (int)$_POST["height"];
+
+        if ($newWidth > 0 && $newHeight > 0) {
+
+            /*
+             * Only restart if resolution actually changed.
+             */
+            if (
+                $newWidth != $width ||
+                $newHeight != $height
+            ) {
+
+                setResolution(
+                    $resolutionFile,
+                    $newWidth,
+                    $newHeight
+                );
+
+                $width  = $newWidth;
+                $height = $newHeight;
+
+                restartCamera($serviceName);
+            }
+        }
+    }
+
+
+    /* ========================================================= */
+    /* CAMERA STATUS                                               */
+    /* ========================================================= */
+
+    $running = cameraRunning($serviceName);
+
+
+    /*
+     * Give systemd/rpicam a moment to initialize the stream.
+     */
+    if ($running) {
+
         if (file_exists("/var/www/hls/stream.m3u8")) {
             $cameraStatus = $GREEN;
         } else {
             $cameraStatus = $YELLOW;
         }
+
+    } else {
+
+        $cameraStatus = $RED;
     }
 
+
+    /* ========================================================= */
+    /* RESPONSE                                                    */
+    /* ========================================================= */
+
     header('Content-Type: application/json; charset=utf-8');
+
     echo json_encode([
         "cameraStatus" => $cameraStatus,
+
+        "cameraRunning" => $running,
+
         "cmd" => $cmd,
+
         "led" => $led,
         "duty" => $duty,
+
         "ledStatus" => $ledStatus,
+
         "resolution" => $width . "x" . $height
     ]);
 
-
 ?>
+
