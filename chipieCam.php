@@ -84,11 +84,7 @@
      */
     function cameraRunning($serviceName)
     {
-        $result = shell_exec(
-            "sudo systemctl is-active " .
-            escapeshellarg($serviceName) .
-            " 2>/dev/null"
-        );
+        $result = shell_exec("sudo ./status.sh");
 
         return trim($result) === "active";
     }
@@ -99,11 +95,7 @@
      */
     function restartCamera($serviceName)
     {
-        shell_exec(
-            "sudo systemctl restart " .
-            escapeshellarg($serviceName) .
-            " 2>&1"
-        );
+        shell_exec("sudo ./restart.sh");
     }
 
 
