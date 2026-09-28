@@ -106,15 +106,15 @@ async function updateChipieCameraStatus(){
     switch(obj.cameraStatus){
         case 0:
             status="&#128308;"
-            tiemout=1
+            tiemout=60
             break
         case 1:
             status="&#128993;"
-            tiemout=1
+            tiemout=90
             break
         case 2:
             status="&#128994;"
-            tiemout=60
+            tiemout=300
             break
     }
 
