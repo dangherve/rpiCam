@@ -59,22 +59,23 @@
 
             $w = 640;
             $h = 480;
-            file_put_contents($file, "$w"."x"."$h");
-            return [$w, $h];
+            $f = 10;
+            file_put_contents($file, "$w"."x"."$h"."x"."$f");
+            return [$w, $h, $f];
         }
 
-        list($w, $h) = explode('x', $content);
-        return [(int)$w, (int)$h];
+        list($w, $h, $f) = explode('x', $content);
+        return [(int)$w, (int)$h, (int)$f];
     }
 
     /**
      * Save resolution
      */
-    function setResolution($file, $w, $h)
+    function setResolution($file, $w, $h,$f)
     {
         file_put_contents(
             $file,
-            ((int)$w) . 'x' . ((int)$h)
+            ((int)$w) . 'x' . ((int)$h). 'x' . ((int)$f)
         );
     }
 
@@ -140,7 +141,7 @@
     /* RESOLUTION                                                  */
     /* ========================================================= */
 
-    [$width, $height] = getResolution($resolutionFile);
+    [$width, $height, $famerate] = getResolution($resolutionFile);
 
     if (isset($_POST["width"], $_POST["height"])) {
 
@@ -160,11 +161,29 @@
                 setResolution(
                     $resolutionFile,
                     $newWidth,
-                    $newHeight
+                    $newHeight,
+                    $famerate
                 );
 
                 $width  = $newWidth;
                 $height = $newHeight;
+
+                restartCamera($serviceName);
+            }
+        }
+
+
+    }elseif (isset($_POST["framerate"])){
+        $newFramerate = (int)$_POST["framerate"];
+        if ($newFramerate > 0) {
+            if ($newFramerate != $famerate) {
+                setResolution(
+                    $resolutionFile,
+                    $width,
+                    $height,
+                    $newFramerate);
+
+                $famerate = $newFramerate;
 
                 restartCamera($serviceName);
             }
@@ -177,7 +196,6 @@
     /* ========================================================= */
 
     $running = cameraRunning($serviceName);
-
 
     /*
      * Give systemd/rpicam a moment to initialize the stream.
@@ -195,7 +213,6 @@
         $cameraStatus = $RED;
     }
 
-
     /* ========================================================= */
     /* RESPONSE                                                    */
     /* ========================================================= */
@@ -204,17 +221,13 @@
 
     echo json_encode([
         "cameraStatus" => $cameraStatus,
-
         "cameraRunning" => $running,
-
         "cmd" => $cmd,
-
         "led" => $led,
         "duty" => $duty,
-
         "ledStatus" => $ledStatus,
-
-        "resolution" => $width . "x" . $height
+        "resolution" => $width . "x" . $height,
+        "famerate" => $famerate
     ]);
 
 ?>

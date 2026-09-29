@@ -9,6 +9,15 @@ function changeResolution(value) {
     });
 }
 
+function changeFrameRate(value) {
+    fetch( 'chipieCam.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'framerate=' + value
+    });
+}
+
+
 async function updateLED(id, duty) {
     document.getElementById("led" + id + "num").value = duty;
     let object = await fetch( 'chipieCam.php', {

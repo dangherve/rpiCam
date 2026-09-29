@@ -48,14 +48,22 @@ range<?= $led['id'] ?>.addEventListener("change", function () {
 <?php endforeach; ?>
             <h2>
                 <span class="icon">🎥</span>
-                Video Resolution
+                Video
                 <span class="icon">🎥</span>
             </h2>
+            <span class="led">Resolution:</span>
             <select id="resolutionSelect" onchange="changeResolution(this.value)">
                 <option value="320x240">320x240</option>
                 <option value="640x480">640x480</option>
                 <option value="1280x720">1280x720</option>
             </select>
+            <span class="led">Framerate:</span>
+            <select id="Framerate" onchange="changeFrameRate(this.value)">
+<?php for ($i=1;$i<24;$i++){ ?>
+                <option value="<?= $i ?>"><?= $i ?></option>
+<?php } ?>
+            </select>
+
         </div>
         <script src="player.js"></script>
 
