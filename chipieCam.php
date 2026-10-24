@@ -1,16 +1,10 @@
 <?php
 
-    $resolutionFile = "/tmp/resolution";
     $ledFile        = "/tmp/led";
 
     $serviceName = "camera.service";
 
     $LED_PINS = [22, 27, 17];
-
-    $RED    = 0;
-    $YELLOW = 1;
-    $GREEN  = 2;
-
 
     /* ========================================================= */
     /* HELPERS                                                   */
@@ -48,58 +42,6 @@
         );
     }
 
-    /**
-     * Load resolution
-     */
-
-    function getResolution($file) {
-        $content = @file_get_contents($file);
-
-        if ($content === false || strpos($content, 'x') === false) {
-
-            $w = 640;
-            $h = 480;
-            $f = 10;
-            file_put_contents($file, "$w"."x"."$h"."x"."$f");
-            return [$w, $h, $f];
-        }
-
-        list($w, $h, $f) = explode('x', $content);
-        return [(int)$w, (int)$h, (int)$f];
-    }
-
-    /**
-     * Save resolution
-     */
-    function setResolution($file, $w, $h,$f)
-    {
-        file_put_contents(
-            $file,
-            ((int)$w) . 'x' . ((int)$h). 'x' . ((int)$f)
-        );
-    }
-
-
-    /*
-     * Get systemd service state.
-     */
-    function cameraRunning($serviceName)
-    {
-        $result = shell_exec("sudo ./status.sh");
-
-        return trim($result) === "active";
-    }
-
-
-    /*
-     * Restart camera.
-     */
-    function restartCamera($serviceName)
-    {
-        shell_exec("sudo ./restart.sh");
-    }
-
-
     /* ========================================================= */
     /* LED MANAGEMENT                                            */
     /* ========================================================= */
@@ -136,82 +78,15 @@
         }
     }
 
-
     /* ========================================================= */
-    /* RESOLUTION                                                  */
+    /* CAMERA MANAGEMENT                                          */
     /* ========================================================= */
 
-    [$width, $height, $famerate] = getResolution($resolutionFile);
+    if (isset($_POST["photo"] && $_POST["photo"]==1) {
+            shell_exec("sudo rpicam-still -t 0 -n -o photo.jpeg --signal >/tmp/photo.log");
 
-    if (isset($_POST["width"], $_POST["height"])) {
-
-        $newWidth  = (int)$_POST["width"];
-        $newHeight = (int)$_POST["height"];
-
-        if ($newWidth > 0 && $newHeight > 0) {
-
-            /*
-             * Only restart if resolution actually changed.
-             */
-            if (
-                $newWidth != $width ||
-                $newHeight != $height
-            ) {
-
-                setResolution(
-                    $resolutionFile,
-                    $newWidth,
-                    $newHeight,
-                    $famerate
-                );
-
-                $width  = $newWidth;
-                $height = $newHeight;
-
-                restartCamera($serviceName);
-            }
-        }
-
-
-    }elseif (isset($_POST["framerate"])){
-        $newFramerate = (int)$_POST["framerate"];
-        if ($newFramerate > 0) {
-            if ($newFramerate != $famerate) {
-                setResolution(
-                    $resolutionFile,
-                    $width,
-                    $height,
-                    $newFramerate);
-
-                $famerate = $newFramerate;
-
-                restartCamera($serviceName);
-            }
-        }
     }
 
-
-    /* ========================================================= */
-    /* CAMERA STATUS                                               */
-    /* ========================================================= */
-
-    $running = cameraRunning($serviceName);
-
-    /*
-     * Give systemd/rpicam a moment to initialize the stream.
-     */
-    if ($running) {
-
-        if (file_exists("/var/www/hls/stream.m3u8")) {
-            $cameraStatus = $GREEN;
-        } else {
-            $cameraStatus = $YELLOW;
-        }
-
-    } else {
-
-        $cameraStatus = $RED;
-    }
 
     /* ========================================================= */
     /* RESPONSE                                                    */

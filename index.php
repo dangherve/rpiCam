@@ -14,6 +14,7 @@
         <h2>
             Status <span id="status" ></span><span id="time" ></span>
         </h2>
+        <img id="snapshot" id="photo" width="640" height="480" src="photo.jpeg">
         <video id="video" controls autoplay></video>
         <div id="controls">
             <h2>
@@ -46,6 +47,14 @@ range<?= $led['id'] ?>.addEventListener("change", function () {
     <button id="led<?= $led['id'] ?>btn" class="btn btn-off" onclick="onLED(<?= $led['id'] ?>)">OFF</button>
 </div>
 <?php endforeach; ?>
+
+            <h2>
+                <span class="icon">📸</span>
+                Photo
+                <span class="icon">📸</span>
+            </h2>
+            <span id="camera-mode-label">Connecting...</span>
+            <label>Snapshot every <input id="snapshot-interval" type="number" value="1" min="0.5" max="60" step="0.5"> seconds</label>
             <h2>
                 <span class="icon">🎥</span>
                 Video
@@ -68,6 +77,8 @@ range<?= $led['id'] ?>.addEventListener("change", function () {
         <script src="player.js"></script>
 
         <script >
+startPhoto();
+/*
 now = new Date()
 var video = document.getElementById('video');
 var hls = new Hls();
@@ -76,7 +87,7 @@ hls.attachMedia(video);
 
 document.getElementById('status').innerHTML = "&#11044;";
 updateChipieCameraStatus()
-
+*/
         </script>
 
 

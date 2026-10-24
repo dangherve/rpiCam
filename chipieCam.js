@@ -1,23 +1,3 @@
-
-
-function changeResolution(value) {
-    let parts = value.split("x");
-    fetch( 'chipieCam.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'width=' + parts[0] + '&height=' + parts[1]
-    });
-}
-
-function changeFrameRate(value) {
-    fetch( 'chipieCam.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'framerate=' + value
-    });
-}
-
-
 async function updateLED(id, duty) {
     document.getElementById("led" + id + "num").value = duty;
     let object = await fetch( 'chipieCam.php', {
@@ -28,9 +8,7 @@ async function updateLED(id, duty) {
     let res = await object.text();
     let obj = JSON.parse(res);
     console.log(obj)
-
     updateChipieCameraStatus()
-
 }
 
 async function sendLED(id) {
@@ -44,13 +22,10 @@ async function sendLED(id) {
     let res =  await object.text();
     let obj = JSON.parse(res);
     console.log(obj)
-
     updateChipieCameraStatus()
-
 }
 
 async function offLED(id) {
-
     let object = await fetch( 'chipieCam.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -59,23 +34,18 @@ async function offLED(id) {
     let res =  await object.text();
     let obj = JSON.parse(res);
     console.log(obj)
-
     updateChipieCameraStatus()
 }
 
 async function onLED(id) {
-
     let object = await fetch( 'chipieCam.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'led=' + id + '&duty=255'
     });
-
-
     let res =  await object.text();
     let obj = JSON.parse(res);
     console.log(obj)
-
     updateChipieCameraStatus()
 }
 
@@ -103,6 +73,30 @@ function updateLed(item,index){
         btn.setAttribute("onclick", `onLED(${led})`);
     }
 
+}
+
+
+async function startPhoto(){
+    let object = await fetch( 'chipieCam.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'photo=1'
+    });
+    let res =  await object.text();
+    let obj = JSON.parse(res);
+    console.log(obj)
+}
+
+
+async function stopPhoto(){
+    let object = await fetch( 'chipieCam.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'photo=0'
+    });
+    let res =  await object.text();
+    let obj = JSON.parse(res);
+    console.log(obj)
 }
 
 async function updateChipieCameraStatus(){
