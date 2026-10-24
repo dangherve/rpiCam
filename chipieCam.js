@@ -75,6 +75,26 @@ function updateLed(item,index){
 
 }
 
+async function updatePhoto(){
+    let object = await fetch( 'chipieCam.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'photo=0'
+    });
+    let res =  await object.text();
+
+
+    photo = document.getElementById("photo");
+
+    photo.src = "photo.jpeg?t=" + Date.now();
+    now = new Date()
+
+    document.getElementById('time').innerHTML = document.getElementById('time').innerHTML
+
+    setTimeout(updatePhoto, document.getElementById('snapshot-interval').value * 1000)
+
+}
+
 
 async function startPhoto(){
     let object = await fetch( 'chipieCam.php', {
@@ -83,9 +103,49 @@ async function startPhoto(){
       body: 'photo=1'
     });
     let res =  await object.text();
-    let obj = JSON.parse(res);
-    console.log(obj)
+
+
+    updatePhoto()
+
 }
+
+
+async function startVideo(){
+/*
+    let object = await fetch( 'chipieCam.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'video=1'
+    });
+    let res =  await object.text();
+    stopPhoto()
+*/
+    document.getElementById("photo").style.display = "none";
+    document.getElementById("video").style.display = "block";
+
+    setTimeout(stopVideo, 10000)
+
+}
+
+
+
+async function stopVideo(){
+/*
+    let object = await fetch( 'chipieCam.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'video=1'
+    });
+    let res =  await object.text();
+    stopPhoto()
+*/
+    document.getElementById("photo").style.display = "block";
+    document.getElementById("video").style.display = "none";
+
+    setTimeout(stopVideo, 10000)
+
+}
+
 
 
 async function stopPhoto(){

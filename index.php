@@ -6,6 +6,7 @@
     </head>
 
     <body>
+
         <h1>
             <span class="icon">✨</span>
             ChipieCam
@@ -14,8 +15,9 @@
         <h2>
             Status <span id="status" ></span><span id="time" ></span>
         </h2>
-        <img id="snapshot" id="photo" width="640" height="480" src="photo.jpeg">
-        <video id="video" controls autoplay></video>
+        <img id="photo" width="640" height="480" src="photo.jpeg" style="display:block">
+        <video id="video" controls autoplay style="display:none"></video>
+
         <div id="controls">
             <h2>
                 <span class="icon">💡</span>
@@ -53,8 +55,7 @@ range<?= $led['id'] ?>.addEventListener("change", function () {
                 Photo
                 <span class="icon">📸</span>
             </h2>
-            <span id="camera-mode-label">Connecting...</span>
-            <label>Snapshot every <input id="snapshot-interval" type="number" value="1" min="0.5" max="60" step="0.5"> seconds</label>
+            <span class="led">Snapshot every <input id="snapshot-interval" type="number" value="1" min="0.5" max="60" step="0.5"> seconds</span>
             <h2>
                 <span class="icon">🎥</span>
                 Video
@@ -72,20 +73,20 @@ range<?= $led['id'] ?>.addEventListener("change", function () {
                 <option value="<?= $i ?>"><?= $i ?></option>
 <?php } ?>
             </select>
-
+            <span  class="led" for="video-duration">Video duration (minutes):</span>
+            <input id="video-duration" type="number" value="3" min="0.167" max="60" step="0.5">
+            <button id="start-video" class="btn-set" type="button" onclick="startVideo()">Start video</button>
         </div>
         <script src="player.js"></script>
 
         <script >
-startPhoto();
-/*
-now = new Date()
-var video = document.getElementById('video');
-var hls = new Hls();
-hls.loadSource('hls/stream.m3u8');
-hls.attachMedia(video);
+            startPhoto();
 
-document.getElementById('status').innerHTML = "&#11044;";
+            var video = document.getElementById('video');
+            var hls = new Hls();
+            hls.loadSource('hls/stream.m3u8');
+            hls.attachMedia(video);
+/*
 updateChipieCameraStatus()
 */
         </script>

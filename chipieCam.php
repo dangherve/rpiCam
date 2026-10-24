@@ -1,52 +1,11 @@
 <?php
 
-    $ledFile        = "/tmp/led";
-
-    $serviceName = "camera.service";
-
     $LED_PINS = [22, 27, 17];
-
-    /* ========================================================= */
-    /* HELPERS                                                   */
-    /* ========================================================= */
-
-    /**
-     * Load led status
-     */
-
-    function getLed($file) {
-        $content = @file_get_contents($file);
-
-        if ($content === false || strpos($content, ',') === false) {
-            $ledStatus = [0,0,0];
-            file_put_contents($file, "$ledStatus[0],$ledStatus[1],$ledStatus[2]");
-            return $ledStatus;
-        }
-
-        $ledStatus = explode(',', $content);
-        return $ledStatus;
-    }
-
-    /**
-     * Save led
-     */
-
-
-    function setLed($file, $ledStatus)
-    {
-        file_put_contents(
-            $file,
-            ((int)$ledStatus[0]) . ',' .
-            ((int)$ledStatus[1]) . ',' .
-            ((int)$ledStatus[2])
-        );
-    }
 
     /* ========================================================= */
     /* LED MANAGEMENT                                            */
     /* ========================================================= */
 
-    $ledStatus = getLed($ledFile);
 
     $led  = -1;
     $duty = -1;
@@ -74,7 +33,6 @@
 
             $ledStatus[$led] = $duty;
 
-            setLed($ledFile, $ledStatus);
         }
     }
 
@@ -82,9 +40,15 @@
     /* CAMERA MANAGEMENT                                          */
     /* ========================================================= */
 
-    if (isset($_POST["photo"] && $_POST["photo"]==1) {
-            shell_exec("sudo rpicam-still -t 0 -n -o photo.jpeg --signal >/tmp/photo.log");
+    if (isset($_POST["photo"])){
 
+        if( $_POST["photo"]==1) {
+            echo "toto";
+            #exec("sudo rpicam-still -t 0 -n -o photo.jpeg --signal >/tmp/photo.log");
+        }else{
+            exec("sudo pkill -USR1 rpicam-still");
+
+        }
     }
 
 
@@ -95,14 +59,10 @@
     header('Content-Type: application/json; charset=utf-8');
 
     echo json_encode([
-        "cameraStatus" => $cameraStatus,
-        "cameraRunning" => $running,
         "cmd" => $cmd,
         "led" => $led,
         "duty" => $duty,
-        "ledStatus" => $ledStatus,
-        "resolution" => $width . "x" . $height,
-        "famerate" => $famerate
+        "ledStatus" => $ledStatus
     ]);
 
 ?>
