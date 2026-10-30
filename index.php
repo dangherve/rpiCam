@@ -1,22 +1,26 @@
+<!doctype html>
+
 <html>
     <head>
         <link rel="stylesheet" href="chipieCam.css">
         <meta charset="UTF-8">
-        <script src="chipieCam.js"></script>
+        <script src="player.js"></script>
+
+        <script src="led.js"></script>
+        <script src="camera.js"></script>
     </head>
 
     <body>
-
         <h1>
             <span class="icon">✨</span>
             ChipieCam
             <span class="icon">✨</span>
         </h1>
         <h2>
-            Status <span id="status" ></span><span id="time" ></span>
+            Status <span id="status" ></span><span id="video-countdown" ></span>
         </h2>
         <img id="photo" width="640" height="480" src="photo.jpeg" style="display:block">
-        <video id="video" controls autoplay style="display:none"></video>
+        <video id="video" controls autoplay muted playsinline style="display:none" ></video>
 
         <div id="controls">
             <h2>
@@ -74,23 +78,11 @@ range<?= $led['id'] ?>.addEventListener("change", function () {
 <?php } ?>
             </select>
             <span  class="led" for="video-duration">Video duration (minutes):</span>
-            <input id="video-duration" type="number" value="3" min="0.167" max="60" step="0.5">
+            <input id="video-duration" type="number" value="1" min="1" max="60" step="1">
             <button id="start-video" class="btn-set" type="button" onclick="startVideo()">Start video</button>
+            <button id="stop-video" class="btn-set" type="button" onclick="stopVideo()" style="display:none" >Stop video</button>
+
         </div>
-        <script src="player.js"></script>
-
-        <script >
-            startPhoto();
-
-            var video = document.getElementById('video');
-            var hls = new Hls();
-            hls.loadSource('hls/stream.m3u8');
-            hls.attachMedia(video);
-/*
-updateChipieCameraStatus()
-*/
-        </script>
-
 
     </body>
 </html>

@@ -61,6 +61,15 @@ h2 {
     box-shadow: 0 10px 40px rgba(0,0,0,.6);
 }
 
+#video {
+    border: 1px solid rgba(0,0,255,.8);
+}
+
+#photo {
+    border: 1px solid rgba(255,255,255,.9);
+}
+
+
 #controls {
     width: 90vw;
     margin: 20px auto;
