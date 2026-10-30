@@ -31,8 +31,10 @@ mkdir -p "$STATE_DIR"
 
 # PHP requests and the delayed cleanup must never modify camera state together.
 exec 9>"$STATE_DIR/lock"
-flock -x 9
-
+if ! flock -w 2 -x 9; then
+    echo "Camera controller is busy" >&2
+    exit 1
+fi
 is_photo_running() {
     pgrep -x rpicam-still >/dev/null 2>&1
 }
@@ -114,7 +116,6 @@ start_photo() {
     result=$?
     echo "$PID" > "$PHOTO_PID_FILE"
     set_mode photo
-    ./check.sh
 }
 
 start_video() {
@@ -207,7 +208,7 @@ date '+%s' > $ACTIVITY_FILE
 # Each request performs exactly one action, releases the lock and exits.
 case "${1:-}" in
     status) print_status ;;
-    photo) start_photo; print_status ;;
+    photo)     ./check.sh >/dev/null 2>/dev/null; start_photo; print_status ;;
     capture) capture_photo; print_status ;;
     video) start_video "${2:-180}"; print_status ;;
     stop-video)
