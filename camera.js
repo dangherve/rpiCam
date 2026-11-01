@@ -84,6 +84,7 @@ function preloadPhoto(url) {
 async function capturePhoto() {
 
     if (cameraState.mode !== 'photo' ) {
+        cancelPhotoTimer()
         return;
     }
 
@@ -118,19 +119,16 @@ function updateVideoCountdown(remainingSeconds) {
     }
 
     cameraState.videoDeadline = Date.now() + remainingSeconds * 1000;
-console.log("dead"+cameraState.videoDeadline)
     const tick = () => {
         if (cameraState.mode !== 'video') return;
         const remaining = Math.max(0, Math.ceil(
             (cameraState.videoDeadline - Date.now()) / 1000
         ));
-console.log("remaining"+remaining)
 
         countdown.textContent = `${remaining} seconds remaining`;
 
         // The WEB CLIENT handles the video timeout, not a watchdog.
         if (remaining === 0) {
-            cancelVideoTimer();
             if (!cameraState.stoppingVideo) stopVideo();
         }
     };
@@ -172,6 +170,10 @@ function switchPhoto(){
     document.getElementById("stop-video").style.display = "none"
     capturePhoto();
     cameraState.hls.detachMedia();
+
+    const countdown = document.getElementById('video-countdown');
+    countdown.textContent = ``;
+
 }
 
 async function stopVideo() {
@@ -194,8 +196,7 @@ async function startVideo() {
         await cameraRequest('video', { seconds });
         switchVideo()
         cancelPhotoTimer()
-
-        updateVideoCountdown(Number(document.getElementById(`video-duration`) *60));
+        updateVideoCountdown(Number(document.getElementById(`video-duration`).value *60));
 
     } catch (error) {
         console.error(error);
